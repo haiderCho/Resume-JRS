@@ -3,6 +3,5 @@
     "app/api/recommend/route.ts": {
       "maxDuration": 30
     }
-  },
-
+  }
 }
