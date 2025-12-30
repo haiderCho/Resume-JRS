@@ -4,7 +4,5 @@
       "maxDuration": 30
     }
   },
-  "env": {
-    "HUGGINGFACE_API_KEY": "@huggingface-api-key"
-  }
+
 }
