@@ -1,0 +1,17 @@
+
+> resume-job-matcher@0.1.0 build
+> next build
+
+ΓÜá Attempted to load @next/swc-win32-x64-msvc, but an error occurred: \\?\C:\Users\NOBEL\GitHub\Resume-JRS\resume-job-matcher\node_modules\@next\swc-win32-x64-msvc\next-swc.win32-x64-msvc.node is not a valid Win32 application.
+\\?\C:\Users\NOBEL\GitHub\Resume-JRS\resume-job-matcher\node_modules\@next\swc-win32-x64-msvc\next-swc.win32-x64-msvc.node
+  Skipping creating a lockfile at C:\Users\NOBEL\GitHub\Resume-JRS\resume-job-matcher\.next\lock because we're using WASM bindings
+Γû▓ Next.js 16.1.1 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+ΓÜá Attempted to load @next/swc-win32-x64-msvc, but an error occurred: \\?\C:\Users\NOBEL\GitHub\Resume-JRS\resume-job-matcher\node_modules\@next\swc-win32-x64-msvc\next-swc.win32-x64-msvc.node is not a valid Win32 application.
+\\?\C:\Users\NOBEL\GitHub\Resume-JRS\resume-job-matcher\node_modules\@next\swc-win32-x64-msvc\next-swc.win32-x64-msvc.node
+
+> Build error occurred
+Error: `turbo.createProject` is not supported by the wasm bindings.
+    at ignore-listed frames
