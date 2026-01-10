@@ -1,0 +1,40 @@
+------------------------------------------------
+Summary:
+- Total Jobs: 735
+- Jobs w/ Skills > 0: 720
+- Jobs w/ Skills = 0: 15 (2.0%)
+- Avg Skills/Job: 7.53
+------------------------------------------------
+Top 20 Detected Skills:
+  python: 493
+  machine learning: 467
+  communication: 371
+  leadership: 246
+  r: 234
+  aws: 229
+  pytorch: 172
+  data analysis: 166
+  tensorflow: 156
+  deep learning: 143
+  generative ai: 139
+  azure: 133
+  java: 116
+  llm: 115
+  spark: 108
+  nlp: 100
+  gcp: 93
+  agile: 86
+  big data: 83
+  c++: 78
+------------------------------------------------
+Bottom 10 Detected Skills (Rare):
+  html5: 1
+  css3: 1
+  sqlite: 1
+  trello: 1
+  next.js: 1
+  redux: 1
+  context api: 1
+  mobx: 1
+  jest: 1
+  cypress: 1

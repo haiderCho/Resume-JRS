@@ -1,0 +1,45 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2026-01-10",
+    "source": "Curated from Industry Standards & Open Datasets"
+  },
+  "categories": {
+    "Languages": [
+      "Python", "JavaScript", "TypeScript", "Java", "C++", "C#", "Go", "Rust", "Swift", "Kotlin", "PHP", "Ruby", "Scala", "R", "Dart", "Lua", "Perl", "Haskell", "Julia"
+    ],
+    "Frontend": [
+      "React", "React.js", "Vue", "Vue.js", "Angular", "Svelte", "Next.js", "Nuxt.js", "SolidJS", "Remix", "Gatsby", 
+      "HTML", "HTML5", "CSS", "CSS3", "Tailwind CSS", "Bootstrap", "Sass", "Less", "Styled Components", "Material UI", "Chakra UI", "Shadcn/ui",
+      "Redux", "Zustand", "Context API", "Recoil", "MobX", "SWR", "TanStack Query", "React Query"
+    ],
+    "Backend": [
+      "Node.js", "Express", "NestJS", "Fastify", "Django", "Flask", "FastAPI", "Spring Boot", "Laravel", "Ruby on Rails", "ASP.NET Core", "Fiber", "Gin",
+      "GraphQL", "Apollo", "REST API", "gRPC", "tRPC", "WebSockets"
+    ],
+    "Database": [
+      "PostgreSQL", "MySQL", "MongoDB", "Redis", "SQLite", "MariaDB", "Oracle", "Microsoft SQL Server", "DynamoDB", "Cassandra", "CouchDB", "Neo4j", "Elasticsearch", "Supabase", "Firebase"
+    ],
+    "DevOps & Cloud": [
+      "AWS", "Amazon Web Services", "Azure", "Google Cloud Platform", "GCP", "DigitalOcean", "Heroku", "Vercel", "Netlify",
+      "Docker", "Kubernetes", "Terraform", "Ansible", "Jenkins", "GitHub Actions", "GitLab CI", "CircleCI", "Prometheus", "Grafana", "ELK Stack", "Nginx", "Linux", "Bash"
+    ],
+    "AI & Data Science": [
+      "Machine Learning", "Deep Learning", "Neural Networks", "NLP", "Computer Vision",
+      "TensorFlow", "PyTorch", "Keras", "Scikit-learn", "Pandas", "NumPy", "Matplotlib", "Seaborn", "Jupyter",
+      "OpenCV", "Hugging Face", "Transformers", "LLM", "Generative AI", "LangChain", "LlamaIndex", "OpenAI API",
+      "Data Analysis", "Big Data", "Spark", "Hadoop", "Airflow", "Databricks"
+    ],
+    "Tools & Methods": [
+      "Git", "GitHub", "GitLab", "Bitbucket",
+      "Agile", "Scrum", "Kanban", "Jira", "Trello", "Linear",
+      "Webpack", "Vite", "Turborepo", "Nx",
+      "Jest", "Vitest", "Cypress", "Playwright", "Selenium", "Mocha", "Chai", "Storybook",
+      "Figma", "Adobe XD", "Postman", "Insomnia"
+    ],
+    "Soft Skills": [
+      "Leadership", "Communication", "Teamwork", "Problem Solving", "Critical Thinking", "Mentorship", 
+      "Project Management", "Time Management", "Adaptability", "Creativity"
+    ]
+  }
+}

@@ -4,6 +4,9 @@ import { useState } from 'react';
 import { Upload, FileText, Briefcase, TrendingUp } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import ErrorMessage from '@/components/ErrorMessage';
+import dynamic from 'next/dynamic';
+const MarketMap = dynamic(() => import('@/components/features/MarketMap'), { ssr: false });
+import SkillGapAnalysis from '@/components/features/SkillGapAnalysis';
 
 interface JobMatch {
   id: string;
@@ -15,6 +18,12 @@ interface JobMatch {
   category: string;
   score: number;
   originalUrl?: string;
+  analysis?: {
+    missingSkills: string[];
+    matchedSkills: string[];
+    extraSkills: string[];
+    matchPercentage: number;
+  };
 }
 
 export default function Home() {
@@ -22,6 +31,38 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [matches, setMatches] = useState<JobMatch[]>([]);
   const [error, setError] = useState<string>('');
+  const [visualization, setVisualization] = useState<any>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const droppedFile = e.dataTransfer.files[0];
+      const validTypes = ['.pdf', '.docx'];
+      const fileExtension = '.' + droppedFile.name.split('.').pop()?.toLowerCase();
+      
+      if (validTypes.includes(fileExtension)) {
+        setFile(droppedFile);
+        setError('');
+      } else {
+        setError('Invalid file type. Please upload a PDF or DOCX.');
+      }
+    }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) {
@@ -54,6 +95,7 @@ export default function Home() {
       }
 
       setMatches(data.matches);
+      setVisualization(data.visualization);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -87,11 +129,22 @@ export default function Home() {
         {/* Upload Section */}
         <div className="bg-white rounded-2xl shadow-lg p-8 mb-8 max-w-2xl mx-auto">
           <form onSubmit={handleSubmit}>
-            <div className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center hover:border-blue-500 transition-colors">
-              <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <label className="cursor-pointer">
-                <span className="text-lg font-medium text-gray-700">
-                  {file ? file.name : 'Click to upload resume'}
+
+
+            <div 
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className={`border-2 border-dashed rounded-xl p-12 text-center transition-colors cursor-pointer ${
+                isDragging 
+                  ? 'border-blue-500 bg-blue-50' 
+                  : 'border-gray-300 hover:border-blue-500'
+              }`}
+            >
+              <Upload className={`w-12 h-12 mx-auto mb-4 ${isDragging ? 'text-blue-600' : 'text-gray-400'}`} />
+              <label className="cursor-pointer block">
+                <span className={`text-lg font-medium ${isDragging ? 'text-blue-700' : 'text-gray-700'}`}>
+                  {file ? file.name : (isDragging ? 'Drop matches here!' : 'Click or Drag to upload resume')}
                 </span>
                 <input
                   type="file"
@@ -100,7 +153,9 @@ export default function Home() {
                   className="hidden"
                 />
               </label>
-              <p className="text-sm text-gray-500 mt-2">PDF or DOCX (Max 5MB)</p>
+              <p className={`text-sm mt-2 ${isDragging ? 'text-blue-600' : 'text-gray-500'}`}>
+                PDF or DOCX (Max 5MB)
+              </p>
             </div>
 
             {file && (
@@ -119,6 +174,7 @@ export default function Home() {
           {error && <ErrorMessage message={error} />}
         </div>
 
+
         {/* Results Section */}
         {matches.length > 0 && (
           <div>
@@ -129,11 +185,16 @@ export default function Home() {
               </h2>
             </div>
 
+            {/* Feature 2: Market Map Visualization */}
+            {visualization && <MarketMap data={visualization} />}
+            
+            <div className="h-8"></div>
+
             <div className="space-y-4">
               {matches.map((job, index) => (
                 <div
                   key={job.id}
-                  className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow"
+                  className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow border border-gray-100"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div>
@@ -155,19 +216,31 @@ export default function Home() {
                   </p>
 
                   <div className="flex flex-wrap gap-2">
-                    {job.skills.map((skill) => (
-                      <span
-                        key={skill}
-                        className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
-                      >
-                        {skill}
-                      </span>
-                    ))}
+                    {job.analysis ? (
+                        // Use analysis skills if available, otherwise fallback
+                        job.analysis.matchedSkills.slice(0, 5).map(skill => (
+                             <span key={skill} className="px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm border border-green-100">
+                               {skill}
+                             </span>
+                        ))
+                    ) : (
+                        job.skills.map((skill) => (
+                          <span
+                            key={skill}
+                            className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                          >
+                            {skill}
+                          </span>
+                        ))
+                    )}
                   </div>
+
+                  {/* Feature 1: Skill Gap Analysis */}
+                  {job.analysis && <SkillGapAnalysis analysis={job.analysis} />}
                   
-                  <div className="mt-4">
+                  <div className="mt-4 pt-4 border-t border-gray-50">
                     <a 
-                      href={`https://www.indeed.com/jobs?q=${encodeURIComponent(`${job.title} ${job.company}`)}&l=`} 
+                      href={job.originalUrl || `https://www.indeed.com/jobs?q=${encodeURIComponent(`${job.title} ${job.company}`)}&l=`} 
                       target="_blank" 
                       rel="noopener noreferrer" 
                       className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium hover:underline"

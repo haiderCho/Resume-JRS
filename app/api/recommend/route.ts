@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { HfInference } from '@huggingface/inference';
 import { extractTextFromPDF, extractTextFromDOCX, cleanText } from '@/lib/text-extraction';
 import { rankJobs } from '@/lib/similarity';
+import { extractSkills, analyzeGap } from '@/lib/skills-extraction';
+import { computePCA } from '@/lib/pca';
 import jobsData from '@/data/jobs-with-embeddings.json';
 
 const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
@@ -13,39 +15,25 @@ export async function POST(request: NextRequest) {
     const file = formData.get('resume') as File;
     
     if (!file) {
-      console.log('No file found in form data');
-      return NextResponse.json(
-        { error: 'No file uploaded' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
     
-    console.log(`Received file: ${file.name}, size: ${file.size}, type: ${file.type}`);
-
-    // Extract text based on file type
+    // 1. Extract Text
     const buffer = Buffer.from(await file.arrayBuffer());
     let resumeText: string;
     
-    console.log('Starting text extraction...');
     if (file.name.endsWith('.pdf')) {
       resumeText = await extractTextFromPDF(buffer);
     } else if (file.name.endsWith('.docx')) {
       resumeText = await extractTextFromDOCX(buffer);
     } else {
-      console.log('Unsupported file type');
-      return NextResponse.json(
-        { error: 'Unsupported file type. Use PDF or DOCX' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Unsupported file type' }, { status: 400 });
     }
-    console.log('Text extraction complete. Length:', resumeText.length);
     
     const cleanedText = cleanText(resumeText);
-    console.log('Text cleaning complete. Length:', cleanedText.length);
     
-    // Generate embedding for resume
-    console.log('Starting embedding generation...');
-    let resumeEmbedding;
+    // 2. Generate Embedding
+    let resumeEmbedding: number[];
     try {
         if (!process.env.HUGGINGFACE_API_KEY || process.env.HUGGINGFACE_API_KEY === 'your_key_here') {
              throw new Error("Missing Key");
@@ -54,30 +42,66 @@ export async function POST(request: NextRequest) {
             model: 'sentence-transformers/all-MiniLM-L6-v2',
             inputs: cleanedText
         });
-        resumeEmbedding = Array.from(output);
-        console.log('Embedding generated successfully');
+        resumeEmbedding = Array.from(output) as number[];
     } catch (e) {
-        console.warn("API Error, using mock embedding for resume:", e);
+        console.warn("API Error, using mock embedding:", e);
         resumeEmbedding = Array.from({length: 384}, () => Math.random() - 0.5);
     }
     
-    // Rank jobs
-    console.log('Ranking jobs...');
+    // 3. Rank Jobs
     // @ts-ignore
-    const matches = rankJobs(resumeEmbedding as number[], jobsData as any[], 10);
-    console.log('Ranking complete. Matches found:', matches.length);
+    const matches = rankJobs(resumeEmbedding, jobsData, 50); // Get top 50 for good PCA plot
+    const topMatches = matches.slice(0, 10); // Return top 10 for list
+
+    // 4. Skill Analysis (Feature 1)
+    const resumeSkills = extractSkills(cleanedText);
     
+    const enhancedMatches = topMatches.map(job => {
+      const jobText = `${job.title} ${job.description}`;
+      const jobSkills = extractSkills(jobText);
+      const gap = analyzeGap(resumeSkills.found, jobSkills.found);
+      
+      return {
+        ...job,
+        analysis: {
+          missingSkills: gap.missing,
+          matchedSkills: gap.matching,
+          extraSkills: gap.extra,
+          matchPercentage: gap.matchPercentage
+        }
+      };
+    });
+
+    // 5. PCA Visualization (Feature 2)
+    // Prepare matrix: [Resume, ...Top50Jobs]
+    const matrix = [resumeEmbedding, ...matches.map(m => m.embedding)];
+    // @ts-ignore
+    const coordinates = computePCA(matrix);
+    
+    const visualizationData = {
+      user: coordinates[0],
+      jobs: matches.map((job, i) => ({
+        id: job.id,
+        title: job.title,
+        company: job.company,
+        x: coordinates[i + 1].x,
+        y: coordinates[i + 1].y,
+        score: job.score,
+        isTopMatch: i < 10
+      }))
+    };
+
     return NextResponse.json({
       success: true,
-      matches,
+      matches: enhancedMatches,
+      visualization: visualizationData,
       resumePreview: cleanedText.substring(0, 200) + '...'
     });
     
   } catch (error: any) {
-    console.error('Error processing resume:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to process resume', details: errorMessage },
+      { error: 'Failed to process resume', details: error.message },
       { status: 500 }
     );
   }

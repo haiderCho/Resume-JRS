@@ -15,6 +15,7 @@ export interface JobMatch {
   category: string;
   score: number;
   originalUrl?: string;
+  embedding?: number[];
 }
 
 export function rankJobs(
@@ -29,6 +30,5 @@ export function rankJobs(
   
   return scored
     .sort((a, b) => b.score - a.score)
-    .slice(0, topK)
-    .map(({ embedding, ...job }) => job);
+    .slice(0, topK);
 }
