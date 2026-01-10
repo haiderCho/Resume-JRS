@@ -34,23 +34,57 @@ async function generateEmbeddings() {
 
     const text = `${job.title}. ${job.description}`;
 
+// Helper to split text (Duplicated from lib/text-extraction.ts for standalone script usage)
+function splitIntoChunks(text, chunkSize = 200, overlap = 50) {
+  const words = text.replace(/\s+/g, ' ').trim().split(' ');
+  if (words.length <= chunkSize) return [text];
+  
+  const chunks = [];
+  let i = 0;
+  
+  while (i < words.length) {
+    const end = Math.min(i + chunkSize, words.length);
+    chunks.push(words.slice(i, end).join(' '));
+    if (end === words.length) break;
+    i += (chunkSize - overlap);
+  }
+  return chunks;
+}
+
     try {
       // Check for key or mock
       if (!process.env.HUGGINGFACE_API_KEY || process.env.HUGGINGFACE_API_KEY === 'your_key_here') {
          throw new Error('No API Key');
       }
 
-      const embedding = await hf.featureExtraction({
-        model: "sentence-transformers/all-MiniLM-L6-v2",
-        inputs: text,
-      });
+      const chunks = splitIntoChunks(text, 200, 50);
+      let finalEmbedding;
+
+      if (chunks.length === 1) {
+         const output = await hf.featureExtraction({
+           model: "sentence-transformers/all-MiniLM-L6-v2",
+           inputs: chunks[0],
+         });
+         finalEmbedding = Array.from(output);
+      } else {
+         const requests = chunks.map(chunk => hf.featureExtraction({
+             model: "sentence-transformers/all-MiniLM-L6-v2",
+             inputs: chunk
+         }));
+         const responses = await Promise.all(requests);
+         const combined = new Array(384).fill(0);
+         responses.forEach(resp => {
+             resp.forEach((val, idx) => combined[idx] += val);
+         });
+         finalEmbedding = combined.map(val => val / chunks.length);
+      }
 
       jobsWithEmbeddings.push({
         ...job,
-        embedding: Array.from(embedding),
+        embedding: finalEmbedding,
       });
 
-      console.log(`[${i + 1}/${jobsToProcess.length}] Processed: ${job.title}`);
+      console.log(`[${i + 1}/${jobsToProcess.length}] Processed: ${job.title} (${chunks.length} chunks)`);
     } catch (error) {
        console.warn(`[Mock] Generating embedding for ${job.title} (Reason: ${error.message})`);
        // Generate random 384-dimensional embedding

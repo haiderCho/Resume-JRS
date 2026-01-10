@@ -79,9 +79,10 @@ export default function MarketMap({ data }: MarketMapProps) {
                  if (entry.type === 'user') {
                     return <Cell key={`cell-${index}`} fill="#2563EB" r={8} className="animate-pulse" />;
                  }
-                 // Top matches are Green, others are Gray
-                 // @ts-ignore
-                 return <Cell key={`cell-${index}`} fill={entry.isTopMatch ? "#10B981" : "#E5E7EB"} />;
+                 
+                 // Type guard to access job-specific properties
+                 const isTop = (entry as any).isTopMatch;
+                 return <Cell key={`cell-${index}`} fill={isTop ? "#10B981" : "#E5E7EB"} />;
               })}
             </Scatter>
           </ScatterChart>

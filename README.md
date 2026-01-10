@@ -1,90 +1,72 @@
 # Resume Job Recommender System (JRS)
 
-> **Semantic Resume Matching powered by AI Embeddings.**
+> **Explainable AI (XAI) for Talent Acquisition.**
+> A client-side Semantic Search Engine that matches resumes to jobs using High-Dimensional Vector Embeddings.
 
-This application allows users to upload a resume (PDF/DOCX) and instantly finds the most relevant job opportunities from a curated dataset. It uses **Hugging Face's transformer models** to generate embeddings for both the resume and job descriptions, performing a **vector similarity search** (Cosine Similarity) to rank the best matches.
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
+![Next.js](https://img.shields.io/badge/Next.js-14-black)
+
+## 🔍 Overview
+
+This is not a traditional keyword matcher. It is a **Hybrid Search Engine** that combines:
+
+1. **Dense Vector Retrieval**: Uses `all-MiniLM-L6-v2` (384d) to understand semantic context (e.g., matching "Frontend Dev" to "React Engineer").
+2. **Symbolic Taxonomy**: Deterministically extracts hard skills for precise gap analysis.
+3. **Structure-Aware Scoring**: Parses resumes into sections (Experience vs Skills) to prevent "keyword stuffing" false positives.
 
 ## 🚀 Key Features
 
-* **Intelligent Matching**: Uses `sentence-transformers/all-MiniLM-L6-v2` to understand the *meaning* of skills and experience, not just keyword matching.
-* **Privacy First**: Resumes are processed in-memory and **never stored** on the server.
-* **Instant Results**: Returns matched jobs within seconds with a compatibility score (0-100%).
-* **Dynamic Application**: "Apply Now" buttons perform a live search on Indeed for the specific role, ensuring valid links.
-* **Format Support**: Handles both `.pdf` and `.docx` file parsing.
+- **Semantic Market Map**: Visualizes the candidate's position in the job market using custom **Dual PCA** dimensionality reduction (384d → 2d).
+- **Explainable Matching (XAI)**:
+  - **Skill Gap Analysis**: Explicitly lists "Matched", "Missing", and "Extra" skills.
+  - **Section Scoring**: Break down score by *Experience Compatibility* vs *Skill Compatibility*.
+- **Smart Chunking**: Implements sliding window strategies to process long resumes without hitting Transformer token limits.
+- **Privacy First**: Zero-retention architecture. Resumes are processed in-memory and discarded instantly.
 
-## 🛠️ Architecture
+## 🛠️ Technical Documentation
 
-* **Frontend**: Next.js 16 (App Router), Tailwind CSS, Lucide Icons.
-* **Backend**: Next.js API Routes.
-* **AI/ML**: Hugging Face Inference API.
-* **Data Processing**: `pdf-parse` (v1.1.1), `mammoth`, `cosine-similarity`.
-* **Database**: Static JSON dataset (pre-embedded) for high-speed retrieval.
+For deep dives into the algorithms and architecture, please see the `docs/` directory:
 
-## 📦 Getting Started
+- [**Technical Architecture**](docs/TECHNICAL_ARCHITECTURE.md): Details on the Embedding Pipeline, PCA Math, and Hybrid Scoring logic.
+- [**Setup & Deployment**](docs/SETUP.md): Guide for running locally or deploying to Vercel.
+
+## ⚡ Quick Start
 
 ### Prerequisites
 
-* Node.js 18+
-* A **Hugging Face API Key** (Free tier is sufficient).
+- Node.js 18+
+- HuggingFace API Key (Free Tier)
 
 ### Installation
 
-1. **Clone the repository:**
+```bash
+git clone https://github.com/haiderCho/resume-jrs.git
+cd resume-jrs
+npm install
+```
 
-    ```bash
-    git clone https://github.com/your-username/resume-jrs.git
-    cd resume-jrs
-    ```
+### Environment Config
 
-2. **Install dependencies:**
+Create `.env.local`:
 
-    ```bash
-    npm install
-    ```
+```env
+HUGGINGFACE_API_KEY=hf_your_key_here
+```
 
-    > **Note:** We strictly use `pdf-parse@1.1.1` to avoid export issues on some environments.
+### Run
 
-3. **Configure Environment:**
-    Create a `.env.local` file in the root directory:
+```bash
+npm run dev
+# Open http://localhost:3000
+```
 
-    ```bash
-    HUGGINGFACE_API_KEY=hf_your_huggingface_key_here
-    ```
+## 🧪 Algorithms implemented
 
-4. **Run Development Server:**
-
-    ```bash
-    npm run dev
-    ```
-
-    Open [http://localhost:3000](http://localhost:3000) to use the app.
-
-## 🧠 How It Works
-
-1. **Preprocessing (Offline)**:
-    * We run `scripts/generate-embeddings.js` to pre-calculate embeddings for our job dataset (`data/jobs_dataset.json`).
-    * These vectors are stored in `data/jobs-with-embeddings.json`.
-
-2. **Inference (Runtime)**:
-    * User uploads a resume.
-    * Server extracts text using `pdf-parse` or `mammoth`.
-    * Text is cleaned and sent to Hugging Face Inference API.
-    * API returns a 384-dimensional vector representing the resume.
-
-3. **Matching**:
-    * We calculate the **Cosine Similarity** between the resume vector and every job vector in our dataset.
-    * Jobs are sorted by score, and the top 10 are returned.
-
-## 🔮 Future Roadmap
-
-* [ ] **Live Data Fetching**: Integrate Adzuna or JSearch API to fetch fresh jobs weekly instead of using a static dataset.
-* [ ] **Filter by Location**: Add UI controls to filter matches by city/country.
-* [ ] **Detailed Breakdown**: Show *why* a job matched (e.g., "Matched on: Python, React").
-
-## 🤝 Contributing
-
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+- **Vector Similarity**: Cosine Similarity in 384-dimensional space.
+- **Dimensionality Reduction**: Principal Component Analysis (Eigenvalue Decomposition of Gram Matrix).
+- **NLP Parsing**: Regex-heuristic segmentation for resume structure.
 
 ## 📄 License
 
-[MIT](https://choosealicense.com/licenses/mit/)
+[MIT](LICENSE)

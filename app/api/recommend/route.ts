@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { HfInference } from '@huggingface/inference';
-import { extractTextFromPDF, extractTextFromDOCX, cleanText } from '@/lib/text-extraction';
-import { rankJobs } from '@/lib/similarity';
+import { extractTextFromPDF, extractTextFromDOCX, cleanText, splitIntoChunks, parseResumeStructure } from '@/lib/text-extraction';
+import { rankJobs, cosineSimilarity } from '@/lib/similarity';
 import { extractSkills, analyzeGap } from '@/lib/skills-extraction';
 import { computePCA } from '@/lib/pca';
 import jobsData from '@/data/jobs-with-embeddings.json';
@@ -9,7 +9,6 @@ import jobsData from '@/data/jobs-with-embeddings.json';
 const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
 
 export async function POST(request: NextRequest) {
-  console.log('API /recommend hit');
   try {
     const formData = await request.formData();
     const file = formData.get('resume') as File;
@@ -18,7 +17,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
     
-    // 1. Extract Text
+    // Extract Text
     const buffer = Buffer.from(await file.arrayBuffer());
     let resumeText: string;
     
@@ -32,51 +31,99 @@ export async function POST(request: NextRequest) {
     
     const cleanedText = cleanText(resumeText);
     
-    // 2. Generate Embedding
+    // Generate Embedding using Smart Chunking
     let resumeEmbedding: number[];
     try {
         if (!process.env.HUGGINGFACE_API_KEY || process.env.HUGGINGFACE_API_KEY === 'your_key_here') {
              throw new Error("Missing Key");
         }
-        const output = await hf.featureExtraction({
-            model: 'sentence-transformers/all-MiniLM-L6-v2',
-            inputs: cleanedText
-        });
-        resumeEmbedding = Array.from(output) as number[];
+
+        const chunks = splitIntoChunks(cleanedText, 200, 50);
+        console.log(`Processing ${chunks.length} chunks...`);
+
+        if (chunks.length === 1) {
+             const output = await hf.featureExtraction({
+                 model: 'sentence-transformers/all-MiniLM-L6-v2',
+                 inputs: chunks[0]
+             });
+             resumeEmbedding = Array.from(output) as number[];
+        } else {
+             const requests = chunks.map(chunk => hf.featureExtraction({
+                 model: 'sentence-transformers/all-MiniLM-L6-v2',
+                 inputs: chunk
+             }));
+             
+             const responses = await Promise.all(requests);
+             const combined = new Array(384).fill(0);
+             
+             responses.forEach(resp => {
+                 const vec = Array.from(resp as number[]);
+                 for(let i=0; i<384; i++) combined[i] += vec[i];
+             });
+             
+             resumeEmbedding = combined.map(val => val / chunks.length);
+        }
+
     } catch (e) {
-        console.warn("API Error, using mock embedding:", e);
+        console.warn("Embedding API Error (using mock):", e);
         resumeEmbedding = Array.from({length: 384}, () => Math.random() - 0.5);
     }
     
-    // 3. Rank Jobs
-    // @ts-ignore
-    const matches = rankJobs(resumeEmbedding, jobsData, 50); // Get top 50 for good PCA plot
-    const topMatches = matches.slice(0, 10); // Return top 10 for list
+    // Rank Jobs
+    const matches = rankJobs(resumeEmbedding, jobsData, 50);
+    const topMatches = matches.slice(0, 10);
 
-    // 4. Skill Analysis (Feature 1)
+    // Skill Analysis
     const resumeSkills = extractSkills(cleanedText);
+    
+    // Structure Parsing & Detailed Scoring
+    const structure = parseResumeStructure(resumeText);
+    
+    const sectionEmbeddings: Record<string, number[]> = {};
+    if (structure.experience.length > 50) {
+         try {
+            const out = await hf.featureExtraction({ model: 'sentence-transformers/all-MiniLM-L6-v2', inputs: structure.experience });
+            sectionEmbeddings.experience = Array.from(out) as number[];
+         } catch(e) { /* Ignore section error */ }
+    }
+    if (structure.skills.length > 20) {
+         try {
+            const out = await hf.featureExtraction({ model: 'sentence-transformers/all-MiniLM-L6-v2', inputs: structure.skills });
+            sectionEmbeddings.skills = Array.from(out) as number[];
+         } catch(e) { /* Ignore section error */ }
+    }
     
     const enhancedMatches = topMatches.map(job => {
       const jobText = `${job.title} ${job.description}`;
       const jobSkills = extractSkills(jobText);
       const gap = analyzeGap(resumeSkills.found, jobSkills.found);
       
+      const expVec = sectionEmbeddings.experience;
+      const skillVec = sectionEmbeddings.skills;
+      
+      const sectionScores = {
+          experience: expVec ? cosineSimilarity(expVec, (job.embedding || []) as number[]) : 0,
+          skills: skillVec ? cosineSimilarity(skillVec, (job.embedding || []) as number[]) : 0
+      };
+
       return {
         ...job,
         analysis: {
           missingSkills: gap.missing,
           matchedSkills: gap.matching,
           extraSkills: gap.extra,
-          matchPercentage: gap.matchPercentage
+          matchPercentage: gap.matchPercentage,
+          sectionScores
         }
       };
     });
 
-    // 5. PCA Visualization (Feature 2)
-    // Prepare matrix: [Resume, ...Top50Jobs]
+    // PCA Visualization
     const matrix = [resumeEmbedding, ...matches.map(m => m.embedding)];
     // @ts-ignore
     const coordinates = computePCA(matrix);
+
+
     
     const visualizationData = {
       user: coordinates[0],
@@ -95,6 +142,7 @@ export async function POST(request: NextRequest) {
       success: true,
       matches: enhancedMatches,
       visualization: visualizationData,
+      structure, // Return parsed structure for debugging/display
       resumePreview: cleanedText.substring(0, 200) + '...'
     });
     
