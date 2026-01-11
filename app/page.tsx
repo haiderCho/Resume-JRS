@@ -1,12 +1,14 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Upload, FileText, Briefcase, TrendingUp } from 'lucide-react';
-import LoadingSpinner from '@/components/LoadingSpinner';
-import ErrorMessage from '@/components/ErrorMessage';
-import dynamic from 'next/dynamic';
-const MarketMap = dynamic(() => import('@/components/features/MarketMap'), { ssr: false });
-import SkillGapAnalysis from '@/components/features/SkillGapAnalysis';
+import { useState } from "react";
+import { Upload, FileText, Briefcase, TrendingUp } from "lucide-react";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import ErrorMessage from "@/components/ErrorMessage";
+import dynamic from "next/dynamic";
+const MarketMap = dynamic(() => import("@/components/features/MarketMap"), {
+  ssr: false,
+});
+import SkillGapAnalysis from "@/components/features/SkillGapAnalysis";
 
 interface JobMatch {
   id: string;
@@ -26,6 +28,7 @@ interface JobMatch {
     sectionScores?: {
       experience: number;
       skills: number;
+      education: number;
     };
   };
 }
@@ -34,7 +37,7 @@ export default function Home() {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [matches, setMatches] = useState<JobMatch[]>([]);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
   const [visualization, setVisualization] = useState<any>(null);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -51,17 +54,18 @@ export default function Home() {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const droppedFile = e.dataTransfer.files[0];
-      const validTypes = ['.pdf', '.docx'];
-      const fileExtension = '.' + droppedFile.name.split('.').pop()?.toLowerCase();
-      
+      const validTypes = [".pdf", ".docx"];
+      const fileExtension =
+        "." + droppedFile.name.split(".").pop()?.toLowerCase();
+
       if (validTypes.includes(fileExtension)) {
         setFile(droppedFile);
-        setError('');
+        setError("");
       } else {
-        setError('Invalid file type. Please upload a PDF or DOCX.');
+        setError("Invalid file type. Please upload a PDF or DOCX.");
       }
     }
   };
@@ -69,7 +73,7 @@ export default function Home() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) {
       setFile(e.target.files[0]);
-      setError('');
+      setError("");
     }
   };
 
@@ -78,22 +82,24 @@ export default function Home() {
     if (!file) return;
 
     setLoading(true);
-    setError('');
+    setError("");
     setMatches([]);
 
     try {
       const formData = new FormData();
-      formData.append('resume', file);
+      formData.append("resume", file);
 
-      const response = await fetch('/api/recommend', {
-        method: 'POST',
+      const response = await fetch("/api/recommend", {
+        method: "POST",
         body: formData,
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.details || data.error || 'Failed to process resume');
+        throw new Error(
+          data.details || data.error || "Failed to process resume"
+        );
       }
 
       setMatches(data.matches);
@@ -117,7 +123,8 @@ export default function Home() {
             Resume Matcher
           </h1>
           <p className="text-xl text-gray-500 max-w-2xl mx-auto">
-            Analyze your resume against hundreds of job opportunities using advanced semantic analysis and AI-driven skill mapping.
+            Analyze your resume against hundreds of job opportunities using
+            advanced semantic analysis and AI-driven skill mapping.
           </p>
         </div>
 
@@ -125,25 +132,39 @@ export default function Home() {
         <div className="bg-white rounded-3xl shadow-xl overflow-hidden mb-12 border border-gray-100 transition-all hover:shadow-2xl max-w-3xl mx-auto">
           <div className="p-8 md:p-12">
             <form onSubmit={handleSubmit} className="space-y-8">
-              <div 
+              <div
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
                 className={`border-3 border-dashed rounded-2xl p-10 text-center transition-all duration-300 cursor-pointer ${
-                  isDragging 
-                    ? 'border-blue-500 bg-blue-50 scale-[1.02]' 
-                    : 'border-gray-200 hover:border-blue-400 hover:bg-gray-50'
+                  isDragging
+                    ? "border-blue-500 bg-blue-50 scale-[1.02]"
+                    : "border-gray-200 hover:border-blue-400 hover:bg-gray-50"
                 }`}
               >
-                <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center transition-colors ${isDragging ? 'bg-blue-200' : 'bg-gray-100'}`}>
-                   <Upload className={`w-8 h-8 ${isDragging ? 'text-blue-600' : 'text-gray-400'}`} />
+                <div
+                  className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center transition-colors ${
+                    isDragging ? "bg-blue-200" : "bg-gray-100"
+                  }`}
+                >
+                  <Upload
+                    className={`w-8 h-8 ${
+                      isDragging ? "text-blue-600" : "text-gray-400"
+                    }`}
+                  />
                 </div>
                 <label className="cursor-pointer block">
                   <span className="text-xl font-semibold text-gray-900 block mb-2">
-                    {file ? file.name : (isDragging ? 'Drop matches here!' : 'Upload your Resume')}
+                    {file
+                      ? file.name
+                      : isDragging
+                      ? "Drop matches here!"
+                      : "Upload your Resume"}
                   </span>
                   <span className="text-gray-500">
-                    {file ? 'Ready to analyze' : 'Drag & drop or click to browse (PDF/DOCX)'}
+                    {file
+                      ? "Ready to analyze"
+                      : "Drag & drop or click to browse (PDF/DOCX)"}
                   </span>
                   <input
                     type="file"
@@ -164,16 +185,22 @@ export default function Home() {
                     <span className="flex items-center justify-center gap-2">
                       <LoadingSpinner /> Analyzing...
                     </span>
-                  ) : 'Analyze Resume'}
+                  ) : (
+                    "Analyze Resume"
+                  )}
                 </button>
               )}
             </form>
 
             <div className="mt-6 flex items-center justify-center gap-2 text-sm text-gray-400">
-                 <span>🔒 Processed securely in-memory</span>
+              <span>🔒 Processed securely in-memory</span>
             </div>
 
-            {error && <div className="mt-6"><ErrorMessage message={error} /></div>}
+            {error && (
+              <div className="mt-6">
+                <ErrorMessage message={error} />
+              </div>
+            )}
           </div>
         </div>
 
@@ -190,11 +217,11 @@ export default function Home() {
             </div>
 
             {visualization && (
-                <div className="mb-12 transform transition hover:scale-[1.01] duration-500">
-                    <MarketMap data={visualization} />
-                </div>
+              <div className="mb-12 transform transition hover:scale-[1.01] duration-500">
+                <MarketMap data={visualization} />
+              </div>
             )}
-            
+
             <div className="space-y-6">
               {matches.map((job, index) => (
                 <div
@@ -207,35 +234,65 @@ export default function Home() {
                         <h3 className="text-2xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors mb-1">
                           {job.title}
                         </h3>
-                        <p className="text-lg text-gray-600 font-medium">{job.company}</p>
+                        <p className="text-lg text-gray-600 font-medium">
+                          {job.company}
+                        </p>
                       </div>
-                      
+
                       <div className="flex flex-col items-end gap-2">
-                          <div className="flex items-center gap-3">
-                              <div className="text-right">
-                                  <div className="text-3xl font-black text-blue-600">
-                                    {(job.score * 100).toFixed(0)}%
-                                  </div>
-                                  <div className="text-xs font-bold text-gray-400 uppercase tracking-wide">Match Score</div>
-                              </div>
-                              <div className="h-10 w-1 bg-gray-100 rounded-full"></div>
-                              <div className="text-right">
-                                   {job.analysis?.sectionScores ? (
-                                       <div className="flex gap-3 text-sm">
-                                           <div className="flex flex-col items-center">
-                                                <span className="font-bold text-gray-800">{(job.analysis.sectionScores.experience * 100).toFixed(0)}%</span>
-                                                <span className="text-[10px] text-gray-400 uppercase">Exp</span>
-                                           </div>
-                                            <div className="flex flex-col items-center">
-                                                <span className="font-bold text-gray-800">{(job.analysis.sectionScores.skills * 100).toFixed(0)}%</span>
-                                                <span className="text-[10px] text-gray-400 uppercase">Skills</span>
-                                           </div>
-                                       </div>
-                                   ) : (
-                                       <span className="text-gray-400 text-sm">N/A</span>
-                                   )}
-                              </div>
+                        <div className="flex items-center gap-3">
+                          <div className="text-right">
+                            <div className="text-3xl font-black text-blue-600">
+                              {(job.score * 100).toFixed(0)}%
+                            </div>
+                            <div className="text-xs font-bold text-gray-400 uppercase tracking-wide">
+                              Match Score
+                            </div>
                           </div>
+                          <div className="h-10 w-1 bg-gray-100 rounded-full"></div>
+                          <div className="text-right">
+                            {job.analysis?.sectionScores ? (
+                              <div className="flex gap-3 text-sm">
+                                <div className="flex flex-col items-center">
+                                  <span className="font-bold text-gray-800">
+                                    {(
+                                      job.analysis.sectionScores.experience *
+                                      100
+                                    ).toFixed(0)}
+                                    %
+                                  </span>
+                                  <span className="text-[10px] text-gray-400 uppercase">
+                                    Exp
+                                  </span>
+                                </div>
+                                <div className="flex flex-col items-center">
+                                  <span className="font-bold text-gray-800">
+                                    {(
+                                      job.analysis.sectionScores.skills * 100
+                                    ).toFixed(0)}
+                                    %
+                                  </span>
+                                  <span className="text-[10px] text-gray-400 uppercase">
+                                    Skills
+                                  </span>
+                                </div>
+                                <div className="flex flex-col items-center">
+                                  <span className="font-bold text-gray-800">
+                                    {(
+                                      job.analysis.sectionScores.education * 100
+                                    ).toFixed(0)}
+                                    %
+                                  </span>
+                                  <span className="text-[10px] text-gray-400 uppercase">
+                                    Edu
+                                  </span>
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="text-gray-400 text-sm">N/A</span>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
 
@@ -244,25 +301,37 @@ export default function Home() {
                     </p>
 
                     <div className="flex flex-wrap gap-2 mb-6">
-                      {(job.analysis?.matchedSkills || job.skills).slice(0, 6).map(skill => (
-                           <span key={skill} className="px-3 py-1 bg-green-50 text-green-700 rounded-md text-sm font-medium border border-green-100">
-                             {skill}
-                           </span>
-                      ))}
-                      {(job.analysis?.missingSkills || []).slice(0, 3).map(skill => (
-                           <span key={skill} className="px-3 py-1 bg-red-50 text-red-600 rounded-md text-sm font-medium border border-red-100 opacity-60">
-                             Missing: {skill}
-                           </span>
-                      ))}
+                      {(job.analysis?.matchedSkills || job.skills)
+                        .slice(0, 6)
+                        .map((skill) => (
+                          <span
+                            key={skill}
+                            className="px-3 py-1 bg-green-50 text-green-700 rounded-md text-sm font-medium border border-green-100"
+                          >
+                            {skill}
+                          </span>
+                        ))}
+                      {(job.analysis?.missingSkills || [])
+                        .slice(0, 3)
+                        .map((skill) => (
+                          <span
+                            key={skill}
+                            className="px-3 py-1 bg-red-50 text-red-600 rounded-md text-sm font-medium border border-red-100 opacity-60"
+                          >
+                            Missing: {skill}
+                          </span>
+                        ))}
                     </div>
 
-                    {job.analysis && <SkillGapAnalysis analysis={job.analysis} />}
-                    
+                    {job.analysis && (
+                      <SkillGapAnalysis analysis={job.analysis} />
+                    )}
+
                     <div className="mt-6 pt-6 border-t border-gray-50 flex justify-end">
-                      <a 
-                        href={job.originalUrl || '#'} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
+                      <a
+                        href={job.originalUrl || "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 text-white bg-gray-900 hover:bg-black px-6 py-2.5 rounded-lg font-medium transition-colors shadow-lg shadow-gray-200"
                       >
                         View Job Details <TrendingUp className="w-4 h-4" />

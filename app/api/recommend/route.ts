@@ -79,19 +79,28 @@ export async function POST(request: NextRequest) {
     // Structure Parsing & Detailed Scoring
     const structure = parseResumeStructure(resumeText);
     
+    // Generate embeddings for sections (if they exist)
     const sectionEmbeddings: Record<string, number[]> = {};
+    const model = 'sentence-transformers/all-MiniLM-L6-v2';
+
     if (structure.experience.length > 50) {
          try {
-            const out = await hf.featureExtraction({ model: 'sentence-transformers/all-MiniLM-L6-v2', inputs: structure.experience });
+            const out = await hf.featureExtraction({ model, inputs: structure.experience });
             sectionEmbeddings.experience = Array.from(out) as number[];
          } catch(e) { /* Ignore section error */ }
     }
     if (structure.skills.length > 20) {
          try {
-            const out = await hf.featureExtraction({ model: 'sentence-transformers/all-MiniLM-L6-v2', inputs: structure.skills });
+            const out = await hf.featureExtraction({ model, inputs: structure.skills });
             sectionEmbeddings.skills = Array.from(out) as number[];
          } catch(e) { /* Ignore section error */ }
     }
+    if (structure.education.length > 20) {
+        try {
+           const out = await hf.featureExtraction({ model, inputs: structure.education });
+           sectionEmbeddings.education = Array.from(out) as number[];
+        } catch(e) { /* Ignore section error */ }
+   }
     
     const enhancedMatches = topMatches.map(job => {
       const jobText = `${job.title} ${job.description}`;
@@ -100,14 +109,33 @@ export async function POST(request: NextRequest) {
       
       const expVec = sectionEmbeddings.experience;
       const skillVec = sectionEmbeddings.skills;
+      const eduVec = sectionEmbeddings.education;
+      const jobVec = (job.embedding || []) as number[]; // Safe default
       
+      const expSim = expVec ? cosineSimilarity(expVec, jobVec) : 0;
+      const skillSim = skillVec ? cosineSimilarity(skillVec, jobVec) : 0;
+      const eduSim = eduVec ? cosineSimilarity(eduVec, jobVec) : 0;
+
+      // Weighted Scoring Formula: 0.5 * Exp + 0.3 * Skills + 0.2 * Edu
+      // If sections are missing, we fallback to the global cosine similarity for that portion relative to weight
+      // effectively blending global score into missing sections to be fair.
+      // But based on user request, strictly:
+      let weightedScore = (0.5 * expSim) + (0.3 * skillSim) + (0.2 * eduSim);
+      
+      // Fallback: If resume is very short/unparsed, rely on global match
+      if (weightedScore < 0.1) {
+          weightedScore = job.score; 
+      }
+
       const sectionScores = {
-          experience: expVec ? cosineSimilarity(expVec, (job.embedding || []) as number[]) : 0,
-          skills: skillVec ? cosineSimilarity(skillVec, (job.embedding || []) as number[]) : 0
+          experience: expSim,
+          skills: skillSim,
+          education: eduSim
       };
 
       return {
         ...job,
+        score: weightedScore, // Override global score with weighted score
         analysis: {
           missingSkills: gap.missing,
           matchedSkills: gap.matching,

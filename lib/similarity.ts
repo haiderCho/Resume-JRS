@@ -16,6 +16,17 @@ export interface JobMatch {
   score: number;
   originalUrl?: string;
   embedding?: number[];
+  analysis?: {
+    missingSkills: string[];
+    matchedSkills: string[];
+    extraSkills: string[];
+    matchPercentage: number;
+    sectionScores?: {
+      experience: number;
+      skills: number;
+      education: number;
+    };
+  };
 }
 
 export function rankJobs(

@@ -34,13 +34,10 @@ To enable 2D visualization of the 384-dimensional latent space, we implemented a
 
 The matching score is not a simple cosine similarity. It is a weighted ensemble:
 
-1. **Global Semantic Score**: Cosine similarity of whole-document embeddings.
-2. **Section-Specific Score**:
-    - `Similarity(Resume_Exp, Job_Desc)`
-    - `Similarity(Resume_Skills, Job_Desc)`
-3. **Symbolic Gap Analysis**:
-    - Extracts hard skills using `lib/skills-extraction.ts` (Taxonomy-based).
-    - Computes Set Difference: $JobSkills \setminus ResumeSkills$.
+1. **Weighted Scoring (Algorithm)**
+   Instead of a single global cosine similarity, we compute a composite score to prioritize experience:
+   $$ Score_{final} = 0.5 \cdot Sim(Experience) + 0.3 \cdot Sim(Skills) + 0.2 \cdot Sim(Education) $$
+   *(Fallback to global cosine similarity if sections are too sparse).*
 
 ## Data Flow
 
