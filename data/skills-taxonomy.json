@@ -1,45 +1,134 @@
 {
   "metadata": {
-    "version": "1.0.0",
-    "lastUpdated": "2026-01-10",
-    "source": "Curated from Industry Standards & Open Datasets"
+    "version": "2.0.0",
+    "lastUpdated": "2026-01-15",
+    "source": "Curated from Industry Standards, O*NET, LinkedIn Skills Cloud & Open Datasets"
   },
   "categories": {
     "Languages": [
-      "Python", "JavaScript", "TypeScript", "Java", "C++", "C#", "Go", "Rust", "Swift", "Kotlin", "PHP", "Ruby", "Scala", "R", "Dart", "Lua", "Perl", "Haskell", "Julia"
+      "Python", "JavaScript", "TypeScript", "Java", "C++", "C#", "C", "Go", "Rust", "Swift", "Kotlin", "PHP", "Ruby", "Scala", "R", "Dart", "Lua", "Perl", "Haskell", "Julia", "Elixir", "Clojure", "F#", "Objective-C", "MATLAB", "COBOL", "Fortran", "Assembly", "Groovy", "Shell", "PowerShell", "VBA", "Solidity", "Move", "Zig"
     ],
     "Frontend": [
-      "React", "React.js", "Vue", "Vue.js", "Angular", "Svelte", "Next.js", "Nuxt.js", "SolidJS", "Remix", "Gatsby", 
-      "HTML", "HTML5", "CSS", "CSS3", "Tailwind CSS", "Bootstrap", "Sass", "Less", "Styled Components", "Material UI", "Chakra UI", "Shadcn/ui",
-      "Redux", "Zustand", "Context API", "Recoil", "MobX", "SWR", "TanStack Query", "React Query"
+      "React", "React.js", "ReactJS", "Vue", "Vue.js", "VueJS", "Angular", "AngularJS", "Svelte", "SvelteKit", "Next.js", "NextJS", "Nuxt.js", "NuxtJS", "SolidJS", "Remix", "Gatsby", "Astro", "Qwik",
+      "HTML", "HTML5", "CSS", "CSS3", "Tailwind CSS", "TailwindCSS", "Bootstrap", "Sass", "SCSS", "Less", "Styled Components", "Material UI", "MUI", "Chakra UI", "Shadcn", "Shadcn/ui", "Ant Design", "Radix UI", "Headless UI",
+      "Redux", "Redux Toolkit", "Zustand", "Context API", "Recoil", "MobX", "Jotai", "Valtio", "XState",
+      "SWR", "TanStack Query", "React Query", "Apollo Client", "RTK Query",
+      "Framer Motion", "GSAP", "Three.js", "D3.js", "Chart.js", "Recharts", "Highcharts"
     ],
     "Backend": [
-      "Node.js", "Express", "NestJS", "Fastify", "Django", "Flask", "FastAPI", "Spring Boot", "Laravel", "Ruby on Rails", "ASP.NET Core", "Fiber", "Gin",
-      "GraphQL", "Apollo", "REST API", "gRPC", "tRPC", "WebSockets"
+      "Node.js", "NodeJS", "Express", "Express.js", "NestJS", "Fastify", "Koa", "Hapi",
+      "Django", "Flask", "FastAPI", "Tornado", "Pyramid",
+      "Spring", "Spring Boot", "Spring MVC", "Quarkus", "Micronaut",
+      "Laravel", "Symfony", "CodeIgniter",
+      "Ruby on Rails", "Rails", "Sinatra",
+      "ASP.NET", "ASP.NET Core", ".NET Core", ".NET",
+      "Fiber", "Gin", "Echo", "Chi",
+      "Phoenix", "Actix", "Rocket",
+      "GraphQL", "Apollo Server", "REST API", "RESTful", "gRPC", "tRPC", "WebSockets", "Socket.io", "SignalR",
+      "Microservices", "Serverless", "Lambda", "Azure Functions", "Cloud Functions"
     ],
     "Database": [
-      "PostgreSQL", "MySQL", "MongoDB", "Redis", "SQLite", "MariaDB", "Oracle", "Microsoft SQL Server", "DynamoDB", "Cassandra", "CouchDB", "Neo4j", "Elasticsearch", "Supabase", "Firebase"
+      "PostgreSQL", "Postgres", "MySQL", "MariaDB", "SQLite", "Oracle", "Oracle Database", "Microsoft SQL Server", "MSSQL", "SQL Server",
+      "MongoDB", "DynamoDB", "Cassandra", "CouchDB", "RavenDB", "ArangoDB",
+      "Redis", "Memcached", "Valkey",
+      "Neo4j", "ArangoDB", "Amazon Neptune", "TigerGraph",
+      "Elasticsearch", "OpenSearch", "Solr", "Algolia", "Meilisearch", "Typesense",
+      "Supabase", "Firebase", "Firestore", "PlanetScale", "Neon", "CockroachDB", "TiDB", "Vitess",
+      "Prisma", "Drizzle", "TypeORM", "Sequelize", "SQLAlchemy", "Hibernate", "Entity Framework",
+      "SQL", "NoSQL", "Time Series DB", "InfluxDB", "TimescaleDB", "ClickHouse"
     ],
     "DevOps & Cloud": [
-      "AWS", "Amazon Web Services", "Azure", "Google Cloud Platform", "GCP", "DigitalOcean", "Heroku", "Vercel", "Netlify",
-      "Docker", "Kubernetes", "Terraform", "Ansible", "Jenkins", "GitHub Actions", "GitLab CI", "CircleCI", "Prometheus", "Grafana", "ELK Stack", "Nginx", "Linux", "Bash"
+      "AWS", "Amazon Web Services", "EC2", "S3", "Lambda", "ECS", "EKS", "RDS", "CloudFormation", "CDK",
+      "Azure", "Azure DevOps", "AKS", "Azure Functions",
+      "Google Cloud Platform", "GCP", "Cloud Run", "GKE", "BigQuery", "Cloud Storage",
+      "DigitalOcean", "Linode", "Vultr", "Hetzner", "OVH",
+      "Heroku", "Vercel", "Netlify", "Railway", "Render", "Fly.io", "Cloudflare Workers", "Deno Deploy",
+      "Docker", "Podman", "Containerd", "Kubernetes", "K8s", "Helm", "Istio", "Linkerd",
+      "Terraform", "Pulumi", "Ansible", "Chef", "Puppet", "SaltStack",
+      "Jenkins", "GitHub Actions", "GitLab CI", "CircleCI", "Travis CI", "ArgoCD", "Flux", "Spinnaker",
+      "Prometheus", "Grafana", "Datadog", "New Relic", "Splunk", "ELK Stack", "Loki", "Jaeger", "OpenTelemetry",
+      "Nginx", "Apache", "Caddy", "Traefik", "HAProxy", "Envoy",
+      "Linux", "Ubuntu", "CentOS", "Debian", "RHEL", "Alpine", "Bash", "Shell Scripting", "systemd"
     ],
     "AI & Data Science": [
-      "Machine Learning", "Deep Learning", "Neural Networks", "NLP", "Computer Vision",
-      "TensorFlow", "PyTorch", "Keras", "Scikit-learn", "Pandas", "NumPy", "Matplotlib", "Seaborn", "Jupyter",
-      "OpenCV", "Hugging Face", "Transformers", "LLM", "Generative AI", "LangChain", "LlamaIndex", "OpenAI API",
-      "Data Analysis", "Big Data", "Spark", "Hadoop", "Airflow", "Databricks"
+      "Machine Learning", "ML", "Deep Learning", "DL", "Neural Networks", "Artificial Intelligence", "AI",
+      "NLP", "Natural Language Processing", "Computer Vision", "CV", "Reinforcement Learning", "RL",
+      "TensorFlow", "PyTorch", "Keras", "JAX", "Scikit-learn", "sklearn", "XGBoost", "LightGBM", "CatBoost",
+      "Pandas", "NumPy", "SciPy", "Matplotlib", "Seaborn", "Plotly", "Bokeh",
+      "Jupyter", "Jupyter Notebook", "JupyterLab", "Google Colab",
+      "OpenCV", "YOLO", "Detectron", "MediaPipe",
+      "Hugging Face", "Transformers", "BERT", "GPT", "LLM", "Large Language Models",
+      "Generative AI", "GenAI", "Stable Diffusion", "Midjourney", "DALL-E",
+      "LangChain", "LlamaIndex", "Semantic Kernel", "AutoGen", "CrewAI",
+      "OpenAI API", "Claude API", "Anthropic", "Gemini API", "Cohere", "Mistral",
+      "RAG", "Retrieval Augmented Generation", "Vector Database", "Pinecone", "Weaviate", "Chroma", "Qdrant", "Milvus",
+      "Data Analysis", "Data Analytics", "Business Intelligence", "BI", "Tableau", "Power BI", "Looker", "Metabase",
+      "Big Data", "Spark", "PySpark", "Hadoop", "Hive", "Presto", "Trino",
+      "Airflow", "Prefect", "Dagster", "Luigi", "dbt",
+      "Databricks", "Snowflake", "Redshift", "BigQuery",
+      "MLflow", "Kubeflow", "MLOps", "Feature Store", "Feast", "Weights & Biases", "W&B"
+    ],
+    "Mobile": [
+      "iOS", "Android", "React Native", "Flutter", "Dart", "SwiftUI", "UIKit", "Jetpack Compose",
+      "Kotlin Multiplatform", "KMM", "Xamarin", "MAUI", ".NET MAUI", "Ionic", "Capacitor", "Cordova",
+      "Expo", "Mobile Development", "App Development", "Firebase", "App Store", "Google Play",
+      "Push Notifications", "In-App Purchases", "Mobile CI/CD", "Fastlane", "Bitrise", "App Center"
+    ],
+    "Security": [
+      "Cybersecurity", "Information Security", "InfoSec", "Application Security", "AppSec",
+      "Penetration Testing", "Pen Testing", "Ethical Hacking", "Bug Bounty",
+      "OWASP", "Security Auditing", "Vulnerability Assessment", "SAST", "DAST", "IAST",
+      "OAuth", "OAuth2", "OpenID Connect", "OIDC", "JWT", "SAML", "SSO", "MFA", "2FA",
+      "Encryption", "TLS", "SSL", "PKI", "Cryptography",
+      "SOC2", "GDPR", "HIPAA", "PCI-DSS", "ISO 27001", "Compliance",
+      "IAM", "Identity Management", "RBAC", "Zero Trust",
+      "Firewall", "WAF", "IDS", "IPS", "SIEM", "Splunk", "Crowdstrike", "Sentinel"
+    ],
+    "Blockchain & Web3": [
+      "Blockchain", "Web3", "Decentralized", "DApps",
+      "Ethereum", "Solidity", "Smart Contracts", "EVM", "Hardhat", "Foundry", "Truffle",
+      "Solana", "Rust", "Anchor", "Move", "Aptos", "Sui",
+      "Bitcoin", "Lightning Network",
+      "DeFi", "Decentralized Finance", "NFT", "Token", "ERC-20", "ERC-721",
+      "IPFS", "Arweave", "The Graph", "Chainlink", "Oracles",
+      "Wallet", "MetaMask", "WalletConnect", "ethers.js", "web3.js", "viem", "wagmi"
     ],
     "Tools & Methods": [
-      "Git", "GitHub", "GitLab", "Bitbucket",
-      "Agile", "Scrum", "Kanban", "Jira", "Trello", "Linear",
-      "Webpack", "Vite", "Turborepo", "Nx",
-      "Jest", "Vitest", "Cypress", "Playwright", "Selenium", "Mocha", "Chai", "Storybook",
-      "Figma", "Adobe XD", "Postman", "Insomnia"
+      "Git", "GitHub", "GitLab", "Bitbucket", "Azure Repos", "Version Control",
+      "Agile", "Scrum", "Kanban", "SAFe", "Lean", "XP", "Waterfall",
+      "Jira", "Trello", "Asana", "Linear", "Monday.com", "Notion", "Confluence", "Clickup",
+      "Webpack", "Vite", "Rollup", "esbuild", "Parcel", "Turbopack",
+      "Turborepo", "Nx", "Lerna", "Monorepo",
+      "Jest", "Vitest", "Mocha", "Chai", "Jasmine", "Karma",
+      "Cypress", "Playwright", "Selenium", "WebdriverIO", "Puppeteer", "TestCafe",
+      "Storybook", "Chromatic",
+      "ESLint", "Prettier", "Husky", "lint-staged",
+      "Figma", "Sketch", "Adobe XD", "Framer", "Zeplin", "InVision",
+      "Postman", "Insomnia", "Thunder Client", "REST Client", "Bruno",
+      "VS Code", "IntelliJ", "WebStorm", "PyCharm", "Vim", "Neovim", "Emacs",
+      "Slack", "Discord", "Microsoft Teams", "Zoom"
     ],
     "Soft Skills": [
-      "Leadership", "Communication", "Teamwork", "Problem Solving", "Critical Thinking", "Mentorship", 
-      "Project Management", "Time Management", "Adaptability", "Creativity"
+      "Leadership", "Team Leadership", "People Management", "Mentorship", "Coaching",
+      "Communication", "Written Communication", "Verbal Communication", "Presentation Skills", "Public Speaking",
+      "Teamwork", "Collaboration", "Cross-functional", "Stakeholder Management",
+      "Problem Solving", "Analytical Thinking", "Critical Thinking", "Decision Making",
+      "Project Management", "Program Management", "Product Management", "Roadmapping",
+      "Time Management", "Prioritization", "Multitasking", "Organization",
+      "Adaptability", "Flexibility", "Learning Agility", "Growth Mindset",
+      "Creativity", "Innovation", "Design Thinking", "User-Centered Design",
+      "Negotiation", "Conflict Resolution", "Emotional Intelligence", "EQ",
+      "Remote Work", "Async Communication", "Documentation"
+    ],
+    "Certifications": [
+      "AWS Certified Solutions Architect", "AWS SAA", "AWS Certified Developer", "AWS Certified DevOps",
+      "Azure Administrator", "AZ-104", "Azure Developer", "AZ-204", "Azure Solutions Architect", "AZ-305",
+      "Google Cloud Professional", "GCP Architect", "GCP Developer",
+      "CKA", "Certified Kubernetes Administrator", "CKAD", "Certified Kubernetes Application Developer",
+      "Terraform Associate", "HashiCorp Certified",
+      "CompTIA Security+", "CISSP", "CEH", "Certified Ethical Hacker",
+      "PMP", "Project Management Professional", "Scrum Master", "CSM", "PSM",
+      "TOGAF", "Six Sigma", "ITIL"
     ]
   }
 }

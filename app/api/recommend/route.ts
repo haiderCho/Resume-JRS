@@ -3,12 +3,37 @@ import { HfInference } from '@huggingface/inference';
 import { extractTextFromPDF, extractTextFromDOCX, cleanText, splitIntoChunks, parseResumeStructure } from '@/lib/text-extraction';
 import { rankJobs, cosineSimilarity } from '@/lib/similarity';
 import { extractSkills, analyzeGap } from '@/lib/skills-extraction';
+import { computeWeightedScore, computeEnsembleScore } from '@/lib/weighted-scoring';
 import { computePCA } from '@/lib/pca';
+import { scoreJobQuality } from '@/lib/job-quality';
+import { detectExperienceLevel, matchExperienceLevel } from '@/lib/experience-detection';
+import { generateResumeFeedback } from '@/lib/resume-feedback';
+import { embeddingCache, getCachedEmbedding } from '@/lib/cache';
+import { apiRateLimiter, RateLimiter, rateLimitHeaders } from '@/lib/rate-limiter';
+import { logger, createRequestLogger } from '@/lib/logger';
 import jobsData from '@/data/jobs-with-embeddings.json';
 
 const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
 
 export async function POST(request: NextRequest) {
+  const requestId = crypto.randomUUID().slice(0, 8);
+  const log = createRequestLogger(requestId);
+  const startTime = performance.now();
+  
+  // Rate Limiting
+  const clientIp = RateLimiter.getIdentifier(request);
+  const rateCheck = apiRateLimiter.check(clientIp);
+  
+  if (!rateCheck.allowed) {
+    log.warn('Rate limit exceeded', { clientIp });
+    return NextResponse.json(
+      { error: 'Too many requests. Please try again later.' },
+      { status: 429, headers: rateLimitHeaders(rateCheck) }
+    );
+  }
+  
+  log.info('Processing resume upload', { clientIp });
+  
   try {
     const formData = await request.formData();
     const file = formData.get('resume') as File;
@@ -69,12 +94,19 @@ export async function POST(request: NextRequest) {
         resumeEmbedding = Array.from({length: 384}, () => Math.random() - 0.5);
     }
     
-    // Rank Jobs
-    const matches = rankJobs(resumeEmbedding, jobsData, 50);
+    // Rank Jobs (with quality filtering)
+    const allMatches = rankJobs(resumeEmbedding, jobsData, 100);
+    const matches = allMatches.filter(job => {
+      const quality = scoreJobQuality(job as any);
+      return quality.isValid;
+    }).slice(0, 50);
     const topMatches = matches.slice(0, 10);
 
     // Skill Analysis
     const resumeSkills = extractSkills(cleanedText);
+    
+    // Experience Level Detection
+    const experienceAnalysis = detectExperienceLevel(resumeText);
     
     // Structure Parsing & Detailed Scoring
     const structure = parseResumeStructure(resumeText);
@@ -107,41 +139,45 @@ export async function POST(request: NextRequest) {
       const jobSkills = extractSkills(jobText);
       const gap = analyzeGap(resumeSkills.found, jobSkills.found);
       
-      const expVec = sectionEmbeddings.experience;
-      const skillVec = sectionEmbeddings.skills;
-      const eduVec = sectionEmbeddings.education;
-      const jobVec = (job.embedding || []) as number[]; // Safe default
+      const jobVec = (job.embedding || []) as number[];
       
-      const expSim = expVec ? cosineSimilarity(expVec, jobVec) : 0;
-      const skillSim = skillVec ? cosineSimilarity(skillVec, jobVec) : 0;
-      const eduSim = eduVec ? cosineSimilarity(eduVec, jobVec) : 0;
-
-      // Weighted Scoring Formula: 0.5 * Exp + 0.3 * Skills + 0.2 * Edu
-      // If sections are missing, we fallback to the global cosine similarity for that portion relative to weight
-      // effectively blending global score into missing sections to be fair.
-      // But based on user request, strictly:
-      let weightedScore = (0.5 * expSim) + (0.3 * skillSim) + (0.2 * eduSim);
+      // Use the new weighted scoring with proper fallbacks
+      const weightedResult = computeWeightedScore(
+        {
+          experience: sectionEmbeddings.experience || null,
+          skills: sectionEmbeddings.skills || null,
+          education: sectionEmbeddings.education || null
+        },
+        jobVec,
+        job.score // Original global cosine similarity as fallback
+      );
       
-      // Fallback: If resume is very short/unparsed, rely on global match
-      if (weightedScore < 0.1) {
-          weightedScore = job.score; 
-      }
-
-      const sectionScores = {
-          experience: expSim,
-          skills: skillSim,
-          education: eduSim
-      };
+      // Level matching bonus
+      const levelMatch = matchExperienceLevel(
+        experienceAnalysis.level,
+        (job as any).level
+      );
+      
+      // Ensemble score: combines semantic + skills + level
+      const ensembleScore = computeEnsembleScore(
+        weightedResult,
+        gap.matchPercentage,
+        levelMatch >= 0.8
+      );
 
       return {
         ...job,
-        score: weightedScore, // Override global score with weighted score
+        score: ensembleScore,
         analysis: {
           missingSkills: gap.missing,
           matchedSkills: gap.matching,
           extraSkills: gap.extra,
           matchPercentage: gap.matchPercentage,
-          sectionScores
+          sectionScores: weightedResult.sectionScores,
+          scoringStrategy: weightedResult.strategy,
+          availableSections: weightedResult.availableSections,
+          levelMatch: levelMatch,
+          candidateLevel: experienceAnalysis.level
         }
       };
     });
@@ -166,16 +202,43 @@ export async function POST(request: NextRequest) {
       }))
     };
 
+    // Generate Resume Feedback
+    const topJobSkills = enhancedMatches
+      .slice(0, 5)
+      .flatMap(m => m.analysis?.matchedSkills || [])
+      .filter((v, i, a) => a.indexOf(v) === i)
+      .slice(0, 10);
+    
+    const resumeFeedback = generateResumeFeedback(
+      resumeText,
+      structure,
+      resumeSkills,
+      experienceAnalysis,
+      topJobSkills
+    );
+    const duration = Math.round(performance.now() - startTime);
+    log.info('Request completed successfully', { 
+      durationMs: duration, 
+      matchCount: enhancedMatches.length,
+      resumeGrade: resumeFeedback.grade
+    });
+
     return NextResponse.json({
       success: true,
-      matches: enhancedMatches,
+      matches: enhancedMatches.sort((a, b) => b.score - a.score),
       visualization: visualizationData,
-      structure, // Return parsed structure for debugging/display
+      structure,
+      experienceAnalysis,
+      resumeFeedback,
       resumePreview: cleanedText.substring(0, 200) + '...'
-    });
+    }, { headers: rateLimitHeaders(rateCheck) });
     
   } catch (error: any) {
-    console.error('Error:', error);
+    const duration = Math.round(performance.now() - startTime);
+    log.error('Request failed', { 
+      durationMs: duration,
+      error: error.message 
+    });
     return NextResponse.json(
       { error: 'Failed to process resume', details: error.message },
       { status: 500 }

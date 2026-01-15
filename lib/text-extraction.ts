@@ -68,12 +68,12 @@ export function parseResumeStructure(text: string): ResumeSections {
   const lines = text.split(/\r?\n/);
   let currentSection: keyof ResumeSections = 'summary';
 
-  // Common Headers Regex
+  // Common Headers Regex - Extended with many common variations
   const headers = {
-    experience: /^(work\s+)?experience|employment|history|work\s+history/i,
-    education: /^education|academic|qualifications/i,
-    skills: /^skills|technical\s+skills|technologies|competencies/i,
-    projects: /^projects|personal\s+projects/i
+    experience: /^(work\s*)?(experience|history|employment|career|positions?\s*held|professional\s*background)/i,
+    education: /^(education|academic|qualifications?|degrees?|schooling|university|college|certifications?|training)/i,
+    skills: /^(skills?|technical\s*skills?|technologies|tech\s*stack|tools|competenc(ies|y)|expertise|proficienc(ies|y)|capabilities)/i,
+    projects: /^(projects?|portfolio|personal\s*projects?|side\s*projects?|achievements?|accomplishments?)/i
   };
 
   for (const line of lines) {
