@@ -9,60 +9,50 @@ export interface SkillAnalysis {
   totalCount: number;
 }
 
-// Optimization: Flatten the taxonomy for O(1) lookups or regex generation
-const SKILL_SET = new Set<string>();
-const SKILL_TO_CATEGORY = new Map<string, string>();
+// Optimization: Flatten the taxonomy for lookups
+const SKILL_DATA: Array<{ original: string, normalized: string, category: string }> = [];
 
-// Initialize optimization structures
 Object.entries(taxonomy.categories).forEach(([category, skills]) => {
   skills.forEach(skill => {
-    const normalized = skill.toLowerCase();
-    SKILL_SET.add(normalized);
-    SKILL_TO_CATEGORY.set(normalized, category);
+    SKILL_DATA.push({
+      original: skill,
+      normalized: skill.toLowerCase(),
+      category: category as string
+    });
   });
 });
 
+const AMBIGUOUS_SKILLS = new Set(['go', 'rust', 'swift', 'r', 'c', 'lean', 'move', 'less']);
+
 export function extractSkills(text: string): SkillAnalysis {
-  const normalizedText = text.toLowerCase();
-  // Simple tokenization: Split by non-word chars but keep potential multi-word skills intact in logic
-  // We'll iterate the taxonomy instead of the text for accuracy on multi-word skills like "React Native" (if we had it)
-  
   const foundSkills = new Set<string>();
   const byCategory: Record<string, string[]> = {};
 
-  // Initialize categories
   Object.keys(taxonomy.categories).forEach(cat => byCategory[cat] = []);
 
-  // Check existence of each skill in text
-  // NOTE: This is O(Skills * TextLength) which is acceptable for < 1000 skills and short text.
-  // For production, Aho-Corasick or Regex optimization is better.
-  SKILL_SET.forEach((skill) => {
-    // Exact word matching using regex boundary to avoid "Java" matching in "Javascript" if we just did .includes()
-    // However, for "C++" \b doesn't work well.
-    // We will use a flexible check.
-    
-    const escapedSkill = skill.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  SKILL_DATA.forEach(({ original, normalized, category }) => {
+    const escapedSkill = original.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     let pattern: RegExp;
     
-    if (['c++', 'c#', '.net'].includes(skill)) {
-       pattern = new RegExp(escapedSkill, 'i'); // Relaxed for special chars
+    if (AMBIGUOUS_SKILLS.has(normalized)) {
+      // Match original casing (Go) or ALL CAPS (GO)
+      // BUT: Guard against sentence starters (e.g., "Move to...", "Less than...")
+      // We look for: (Start of Line OR Period Space) followed by Skill followed by a lowercase word
+      const sentenceStarter = new RegExp(`(^|[.\\?!]\\s+)(${original}|${original.toUpperCase()})\\s+[a-z]`);
+      if (sentenceStarter.test(text)) {
+        return; // Ignore if it looks like a common sentence starter
+      }
+      pattern = new RegExp(`\\b(${escapedSkill}|${original.toUpperCase()})\\b`);
+    } else if (['c++', 'c#', '.net'].includes(normalized)) {
+      pattern = new RegExp(escapedSkill, 'i'); 
     } else {
-       pattern = new RegExp(`\\b${escapedSkill}\\b`, 'i');
+      pattern = new RegExp(`\\b${escapedSkill}\\b`, 'i');
     }
 
     if (pattern.test(text)) {
-      // Get the original casing from the taxonomy implies mapping back or just using the normalized key
-      // Let's store the display version.
-      // We need a map from normalized -> Original. 
-      // For now, we will just capitalize.
-      const category = SKILL_TO_CATEGORY.get(skill);
-      if (category) {
-        // Find the original casing from taxonomy
-        const originalName = taxonomy.categories[category as SkillCategory].find(s => s.toLowerCase() === skill) || skill;
-        if (!foundSkills.has(originalName)) {
-            foundSkills.add(originalName);
-            byCategory[category].push(originalName);
-        }
+      if (!foundSkills.has(original)) {
+        foundSkills.add(original);
+        byCategory[category].push(original);
       }
     }
   });
@@ -75,14 +65,17 @@ export function extractSkills(text: string): SkillAnalysis {
 }
 
 export function analyzeGap(resumeSkills: string[], jobSkills: string[]) {
-  const resumeSet = new Set(resumeSkills);
-  const jobSet = new Set(jobSkills);
+  // Use normalized versions for comparison to handle aliases (React vs ReactJS)
+  const normalize = (s: string) => s.toLowerCase().replace(/[.\s-]/g, '');
+  
+  const resumeNormalized = new Set(resumeSkills.map(normalize));
+  const jobNormalized = new Set(jobSkills.map(normalize));
 
-  const missing = jobSkills.filter(s => !resumeSet.has(s));
-  const matching = jobSkills.filter(s => resumeSet.has(s));
+  const missing = jobSkills.filter(s => !resumeNormalized.has(normalize(s)));
+  const matching = jobSkills.filter(s => resumeNormalized.has(normalize(s)));
   
   // Extra skills are present in resume but not in job
-  const extra = resumeSkills.filter(s => !jobSet.has(s));
+  const extra = resumeSkills.filter(s => !jobNormalized.has(normalize(s)));
 
   return {
     missing,

@@ -5,8 +5,8 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Resume-Job Matcher | AI-Powered Job Recommendations',
-  description: 'Upload your resume and discover matching job opportunities using semantic AI matching',
+  title: 'Resume AI JRS',
+  description: 'Analyze your resume against hundreds of job opportunities using advanced semantic analysis and AI-driven skill mapping.',
 };
 
 export default function RootLayout({

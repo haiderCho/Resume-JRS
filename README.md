@@ -1,4 +1,4 @@
-# Resume Job Recommender System (JRS)
+# Resume AI JRS
 
 > **Explainable AI (XAI) for Talent Acquisition.**
 > A client-side Semantic Search Engine that matches resumes to jobs using High-Dimensional Vector Embeddings.

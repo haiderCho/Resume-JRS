@@ -158,6 +158,11 @@ export async function POST(request: NextRequest) {
         (job as any).level
       );
       
+      // Fix: If AI section score for skills is 0, fallback to keyword match percentage
+      if (weightedResult.sectionScores.skills === 0) {
+        weightedResult.sectionScores.skills = gap.matchPercentage / 100;
+      }
+
       // Ensemble score: combines semantic + skills + level
       const ensembleScore = computeEnsembleScore(
         weightedResult,

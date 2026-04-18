@@ -201,10 +201,13 @@ export default function Home() {
           <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-600 rounded-2xl shadow-lg mb-6 transform transition hover:scale-105">
             <Briefcase className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-5xl font-extrabold tracking-tight text-gray-900 mb-4">
-            Resume Matcher
+          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 mb-4">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
+              Resume AI
+            </span>{" "}
+            JRS
           </h1>
-          <p className="text-xl text-gray-500 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed">
             Analyze your resume against hundreds of job opportunities using
             advanced semantic analysis and AI-driven skill mapping.
           </p>
@@ -529,27 +532,64 @@ export default function Home() {
 
                     {/* Job Description */}
                     <div className="mb-6">
-                      <div className={`text-gray-600 leading-relaxed whitespace-pre-line ${expandedJobs.has(job.id) ? '' : 'line-clamp-3'}`}>
-                        {job.description.split(/\n|\. /).filter(Boolean).map((sentence, i) => (
-                          <span key={i}>
-                            {sentence.trim()}{!sentence.endsWith('.') && i < job.description.split(/\n|\. /).length - 1 ? '. ' : ' '}
-                          </span>
-                        ))}
+                      <div className="relative bg-gray-50/50 p-6 rounded-2xl border border-gray-100 shadow-sm">
+                        <div className={`text-gray-800 leading-relaxed font-normal text-sm ${expandedJobs.has(job.id) ? "" : "max-h-48 overflow-hidden"}`}>
+                          <div className="space-y-3">
+                            {job.description
+                              .split("\n")
+                              .map(line => line.trim())
+                              .filter(Boolean)
+                              .map((line, idx) => {
+                                const isHeader = line.endsWith(":") || (line.length < 40 && /^[A-Z][a-z]+(\s+[A-Z][a-z]+)*:?$/.test(line));
+                                const isBullet = line.startsWith("•") || line.startsWith("-") || line.startsWith("*");
+                                
+                                // Skill Highlighting Logic
+                                let content: React.ReactNode = line;
+                                if (!isHeader && job.analysis) {
+                                  const matched = job.analysis.matchedSkills || [];
+                                  const missing = job.analysis.missingSkills || [];
+                                  const allSkills = [...matched, ...missing];
+                                  allSkills.sort((a, b) => b.length - a.length).forEach(skill => {
+                                    if (typeof content !== "string") return;
+                                    const parts = content.split(new RegExp(`(\\b${skill}\\b)`, "gi"));
+                                    content = parts.map((part, i) => {
+                                      if (part.toLowerCase() === skill.toLowerCase()) {
+                                        const isMatch = matched.some(s => s.toLowerCase() === skill.toLowerCase());
+                                        return (
+                                          <span key={i} className={`font-bold ${isMatch ? "text-green-600 underline decoration-green-200 underline-offset-2" : "text-orange-600"}`}>
+                                            {part}
+                                          </span>
+                                        );
+                                      }
+                                      return part;
+                                    });
+                                  });
+                                }
+
+                                return (
+                                  <div key={idx} className={`${isHeader ? "pt-2 font-bold text-gray-900 text-base border-b border-gray-100 pb-1 mb-2" : ""} ${isBullet ? "pl-5 relative before:content-['•'] before:absolute before:left-1 before:text-blue-500 before:font-bold" : ""}`}>
+                                    {isHeader ? (line.endsWith(":") ? line : line + ":") : (isBullet ? (typeof content === "string" ? content.substring(1).trim() : content) : content)}
+                                  </div>
+                                );
+                              })}
+                          </div>
+                        </div>
+                        {!expandedJobs.has(job.id) && job.description.length > 200 && (
+                          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-gray-50/95 via-gray-50/70 to-transparent pointer-events-none rounded-b-2xl" />
+                        )}
                       </div>
                       {job.description.length > 200 && (
                         <button
                           onClick={() => toggleJobExpand(job.id)}
-                          className="mt-2 flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
+                          className="mt-2 text-blue-600 hover:text-blue-700 text-sm font-semibold flex items-center transition-colors px-1"
                         >
                           {expandedJobs.has(job.id) ? (
                             <>
-                              <ChevronUp className="w-4 h-4" />
-                              Show Less
+                              <ChevronUp className="w-4 h-4 mr-1" /> Show Less
                             </>
                           ) : (
                             <>
-                              <ChevronDown className="w-4 h-4" />
-                              Read More
+                              <ChevronDown className="w-4 h-4 mr-1" /> Read Full Description
                             </>
                           )}
                         </button>

@@ -6,11 +6,11 @@
   },
   "categories": {
     "Languages": [
-      "Python", "JavaScript", "TypeScript", "Java", "C++", "C#", "C", "Go", "Rust", "Swift", "Kotlin", "PHP", "Ruby", "Scala", "R", "Dart", "Lua", "Perl", "Haskell", "Julia", "Elixir", "Clojure", "F#", "Objective-C", "MATLAB", "COBOL", "Fortran", "Assembly", "Groovy", "Shell", "PowerShell", "VBA", "Solidity", "Move", "Zig"
+      "Python", "JavaScript", "TypeScript", "Java", "C++", "C#", "C", "Go", "Rust", "Swift", "Kotlin", "PHP", "Ruby", "Scala", "R", "Dart", "Lua", "Perl", "Haskell", "Julia", "Elixir", "Clojure", "F#", "Objective-C", "MATLAB", "COBOL", "Fortran", "Assembly", "Groovy", "Shell", "PowerShell", "VBA", "Solidity", "Zig", "Mojo"
     ],
     "Frontend": [
-      "React", "React.js", "ReactJS", "Vue", "Vue.js", "VueJS", "Angular", "AngularJS", "Svelte", "SvelteKit", "Next.js", "NextJS", "Nuxt.js", "NuxtJS", "SolidJS", "Remix", "Gatsby", "Astro", "Qwik",
-      "HTML", "HTML5", "CSS", "CSS3", "Tailwind CSS", "TailwindCSS", "Bootstrap", "Sass", "SCSS", "Less", "Styled Components", "Material UI", "MUI", "Chakra UI", "Shadcn", "Shadcn/ui", "Ant Design", "Radix UI", "Headless UI",
+      "React", "React.js", "ReactJS", "React 19", "Vue", "Vue.js", "VueJS", "Angular", "AngularJS", "Svelte", "SvelteKit", "Next.js", "NextJS", "Next.js 15", "Nuxt.js", "NuxtJS", "SolidJS", "Remix", "Gatsby", "Astro", "Qwik",
+      "HTML", "HTML5", "CSS", "CSS3", "Tailwind CSS", "TailwindCSS", "Bootstrap", "Sass", "SCSS", "Styled Components", "Material UI", "MUI", "Chakra UI", "Shadcn", "Shadcn/ui", "Ant Design", "Radix UI", "Headless UI",
       "Redux", "Redux Toolkit", "Zustand", "Context API", "Recoil", "MobX", "Jotai", "Valtio", "XState",
       "SWR", "TanStack Query", "React Query", "Apollo Client", "RTK Query",
       "Framer Motion", "GSAP", "Three.js", "D3.js", "Chart.js", "Recharts", "Highcharts"
@@ -24,7 +24,7 @@
       "ASP.NET", "ASP.NET Core", ".NET Core", ".NET",
       "Fiber", "Gin", "Echo", "Chi",
       "Phoenix", "Actix", "Rocket",
-      "GraphQL", "Apollo Server", "REST API", "RESTful", "gRPC", "tRPC", "WebSockets", "Socket.io", "SignalR",
+      "GraphQL", "Apollo Server", "REST API", "RESTful", "gRPC", "tRPC", "WebSockets", "Socket.io", "SignalR", "Server Actions",
       "Microservices", "Serverless", "Lambda", "Azure Functions", "Cloud Functions"
     ],
     "Database": [
@@ -59,9 +59,9 @@
       "OpenCV", "YOLO", "Detectron", "MediaPipe",
       "Hugging Face", "Transformers", "BERT", "GPT", "LLM", "Large Language Models",
       "Generative AI", "GenAI", "Stable Diffusion", "Midjourney", "DALL-E",
-      "LangChain", "LlamaIndex", "Semantic Kernel", "AutoGen", "CrewAI",
-      "OpenAI API", "Claude API", "Anthropic", "Gemini API", "Cohere", "Mistral",
-      "RAG", "Retrieval Augmented Generation", "Vector Database", "Pinecone", "Weaviate", "Chroma", "Qdrant", "Milvus",
+      "LangChain", "LlamaIndex", "Semantic Kernel", "AutoGen", "CrewAI", "DSPy",
+      "OpenAI API", "Claude API", "Anthropic", "Gemini API", "Cohere", "Mistral", "Groq",
+      "RAG", "Retrieval Augmented Generation", "Vector Database", "Pinecone", "Weaviate", "Chroma", "Qdrant", "Milvus", "LanceDB",
       "Data Analysis", "Data Analytics", "Business Intelligence", "BI", "Tableau", "Power BI", "Looker", "Metabase",
       "Big Data", "Spark", "PySpark", "Hadoop", "Hive", "Presto", "Trino",
       "Airflow", "Prefect", "Dagster", "Luigi", "dbt",
